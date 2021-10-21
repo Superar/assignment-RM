@@ -36,5 +36,21 @@ non_timeout_counts = non_timeout_counts.groupby('algorithm').sum()
 non_timeout_counts.name = 'Non-timeout'
 
 timeout_df = pd.concat([timeout_counts, non_timeout_counts], axis=1)
+timeout_df.index = ['Code 1', 'Code 2']
 timeout_df.plot.bar()
+plt.tight_layout()
+
+# Average runtime by probability
+
+runtime_data = df.groupby(by=['algorithm',
+                              'Overlap probability'])['runtime'].mean()
+code1_runtime = runtime_data['code1']
+code1_runtime.name = 'Code 1'
+code2_runtime = runtime_data['code2']
+code2_runtime.name = 'Code 2'
+
+runtime_df = pd.concat([code1_runtime, code2_runtime], axis=1)
+runtime_df.plot.line(subplots=True)
+
+plt.tight_layout()
 plt.show()
