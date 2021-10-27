@@ -6,7 +6,7 @@ import argparse
 import random
 import pandas as pd
 
-TIMEOUT = 5
+TIMEOUT = 30
 NUM_EXAMS = 50
 NUM_SEEDS = 3
 
@@ -56,7 +56,7 @@ def run_tests(data_path):
         results['runtime'].append(runtime_code2)
     
     df = pd.DataFrame(results)
-    df.to_csv('results.csv')
+    df.to_csv('results.csv', float_format='{:e}'.format)
     
 
 def main(args):
