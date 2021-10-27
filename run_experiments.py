@@ -1,23 +1,25 @@
 from subprocess import PIPE, run
 from pathlib import Path
+from sys import platform
 import itertools
 import argparse
 import random
 import pandas as pd
 
 TIMEOUT = 5
+NUM_EXAMS = 50
 NUM_SEEDS = 3
 
 def generate_data(seeds):
-    n_exams = list(range(0, 310, 10))
+    n_exams = list(range(0, NUM_EXAMS+10, 10))
     # Fix limits
     n_exams[0] = 2
-    n_exams[-1] = 299
 
     probabilities = [2**(i+1) / 100 for i in range(6)] # TODO: Define final probabilities
 
+    python = 'python' if platform == 'win32' else 'python3.9'
     for n, p, s in itertools.product(n_exams, probabilities, seeds):
-        run(['python3.9',
+        run([python,
              'material/gen.py',
              str(n), str(p), str(s),
              f'data/data_{n}-{p}-{s}.in'])
@@ -33,11 +35,14 @@ def run_tests(data_path):
     for file_ in data_path.iterdir():
         seed = file_.stem.split('-')[-1]
 
-        result_code1 = run(['material/code1', seed, str(TIMEOUT), str(file_)], stdout=PIPE)
+        code1 = 'code1.exe' if platform == 'win32' else 'code1'
+        code2 = 'code2.exe' if platform == 'win32' else 'code2'
+
+        result_code1 = run([f'material/{code1}', seed, str(TIMEOUT), str(file_)], stdout=PIPE)
         slots_code1 = int(result_code1.stdout.split()[0])
         runtime_code1 = float(result_code1.stdout.split()[1])
 
-        result_code2 = run(['material/code2', seed, str(TIMEOUT), str(file_)], stdout=PIPE)
+        result_code2 = run([f'material/{code2}', seed, str(TIMEOUT), str(file_)], stdout=PIPE)
         slots_code2 = int(result_code2.stdout.split()[0])
         runtime_code2 = float(result_code2.stdout.split()[1])
 
