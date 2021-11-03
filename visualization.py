@@ -26,25 +26,25 @@ df['Seed'] = df['Seed'].astype('int')
 #### Plots ####
 
 # Timeout histogram
-# num_slots_data = df.groupby(by=['algorithm'])['slots'].value_counts()
-# num_slots_counts = num_slots_data.index.get_level_values('slots')
+num_slots_data = df.groupby(by=['algorithm'])['slots'].value_counts()
+num_slots_counts = num_slots_data.index.get_level_values('slots')
 
-# timeout_counts = num_slots_data[num_slots_counts == -1]
-# timeout_counts.index = timeout_counts.index.droplevel(1)
-# timeout_counts.name = 'Timeout'
-# non_timeout_counts = num_slots_data[num_slots_counts != -1]
-# non_timeout_counts = non_timeout_counts.groupby('algorithm').sum()
-# non_timeout_counts.name = 'Non-timeout'
+timeout_counts = num_slots_data[num_slots_counts == -1]
+timeout_counts.index = timeout_counts.index.droplevel(1)
+timeout_counts.name = 'Timeout'
+non_timeout_counts = num_slots_data[num_slots_counts != -1]
+non_timeout_counts = non_timeout_counts.groupby('algorithm').sum()
+non_timeout_counts.name = 'Non-timeout'
 
-# timeout_df = pd.concat([timeout_counts, non_timeout_counts], axis=1)
-# timeout_df.index = ['Code 1', 'Code 2']
-# ax = timeout_df.plot.bar()
-# for p in ax.patches:
-#     ax.annotate(str(p.get_height()),
-#                 (p.get_x() + (p.get_width() * 0.5), p.get_height() * 1.005),
-#                 ha='center')
-# plt.tight_layout()
-# plt.savefig('img/timeout_hist.pdf', format='pdf')
+timeout_df = pd.concat([timeout_counts, non_timeout_counts], axis=1)
+timeout_df.index = ['Code 1', 'Code 2']
+ax = timeout_df.plot.bar()
+for p in ax.patches:
+    ax.annotate(str(p.get_height()),
+                (p.get_x() + (p.get_width() * 0.5), p.get_height() * 1.005),
+                ha='center')
+plt.tight_layout()
+plt.savefig('img/timeout_hist.pdf', format='pdf')
 
 # Grid scatter plot
 code1_df = df.loc[df['algorithm'] == 'code1']
