@@ -89,7 +89,7 @@ plt.savefig('img/linear_regression_log.pdf', format='pdf')
 ### PLOT IN EXP SPACE ###
 
 fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'},
-                               fsigsize=(15, 5))
+                               figsize=(15, 5))
 plt.tight_layout(w_pad=2)
 
 # code1
