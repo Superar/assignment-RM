@@ -1,3 +1,4 @@
+from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -95,8 +96,8 @@ if eda:
     ntime_plt = True
     code_type = True
 
-    datasetf = clean_output_nocutoff
-    #datasetf = clean_output
+    #datasetf = clean_output_nocutoff
+    datasetf = clean_output
     eda_plots_dir = "EDA" + sep + ("standard_dataset" if datasetf is clean_output else "no_cutoffs_dataset") + sep
 
     df = pd.read_csv(datasetf)
@@ -195,7 +196,8 @@ if show_avg_surface:
     zv1 = code1_mean_time
     zv2 = code2_mean_time
 
-    fig = plt.figure(figsize=plt.figaspect(0.5))
+    fig = plt.figure(figsize=(16, 8))
+    #fig = plt.figure(figsize=plt.figaspect(0.5))
 
     def format_func(val, tick_number):
         # find number of multiples of pi/2
@@ -224,7 +226,8 @@ if show_avg_surface:
 
 
 if show_std_surface:
-    fig = plt.figure(figsize=plt.figaspect(0.5))
+    fig = plt.figure(figsize=(16, 8))
+    #fig = plt.figure(figsize=plt.figaspect(0.5))
 
     zv1std = code1_std_time
     zv2std = code2_std_time
