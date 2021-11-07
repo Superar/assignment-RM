@@ -54,6 +54,16 @@ def plot_linear_regression(df, ax, fixed_value,
         np.power(10, np.dot(regr_params.T, regr_line_x)), 0, 100)
     ax.plot(regr_line_x[0, :], regr_line_y, c=regr_line_c)
 
+    # Calculate residuals
+    residuals = y - \
+        np.clip(np.power(10, np.dot(regr_params.T,
+                np.vstack([x, np.ones(x.shape)]))), 0, 100)
+    sst = np.square(y - y.mean()).sum()
+    sse = np.square(residuals).sum()
+    ssr = sst - sse
+    r2 = (ssr / sst)*100 if sst > 0 else 0.0
+    return r2
+
 
 df = pd.read_csv(FILE, index_col=0)
 clean_info = df['file'].str.lstrip('data_').str.rstrip('.in')
@@ -178,18 +188,20 @@ for i in range(ncols - naxs_last_row):
 
 for i, prob in enumerate(probs):
     ax = axs[i // ncols][i % ncols]
-    plot_linear_regression(code2_df, ax, prob,
-                           'Overlap probability',
-                           'Number of exams',
-                           marker_c='g')
-    plot_linear_regression(code1_df, ax, prob,
-                           'Overlap probability',
-                           'Number of exams',
-                           marker='d', marker_c='k',
-                           regr_line_c='m', regr_marker_c='m')
+    code1_r2 = plot_linear_regression(code1_df, ax, prob,
+                                      'Overlap probability',
+                                      'Number of exams',
+                                      marker='d', marker_c='k',
+                                      regr_line_c='m', regr_marker_c='m')
+    code2_r2 = plot_linear_regression(code2_df, ax, prob,
+                                      'Overlap probability',
+                                      'Number of exams',
+                                      marker_c='g')
     ax.set_xlabel('Number of exams')
     ax.set_ylabel('Run time')
-    ax.set_title(f'Probability {prob*100:.2f}%')
+    ax.set_title(f'''Probability {prob*100:.2f}%
+    code1.c - $R^2$ = {code1_r2:.2f}%
+    code2.c - $R^2$ = {code2_r2:.2f}%''')
 
 # Add legend
 magenta_patch = mlines.Line2D([], [], c='m', marker='s',
@@ -215,24 +227,27 @@ naxs_last_row = len(nums) % ncols
 nrows = len(nums) // ncols
 nrows = nrows + 1 if naxs_last_row else nrows
 
-fig, axs = plt.subplots(nrows, ncols, figsize=(15, 10))
+fig, axs = plt.subplots(nrows, ncols, figsize=(20, 10))
 for i in range(ncols - naxs_last_row):
     axs[-1][-i-1].remove()
 
 for i, num in enumerate(nums):
     ax = axs[i // ncols][i % ncols]
-    plot_linear_regression(code1_df, ax, num,
-                           'Number of exams',
-                           'Overlap probability',
-                           marker='d', marker_c='k',
-                           regr_line_c='m', regr_marker_c='m')
-    plot_linear_regression(code2_df, ax, num,
-                           'Number of exams',
-                           'Overlap probability',
-                           marker_c='g')
+    code1_r2 = plot_linear_regression(code1_df, ax, num,
+                                      'Number of exams',
+                                      'Overlap probability',
+                                      marker='d', marker_c='k',
+                                      regr_line_c='m', regr_marker_c='m')
+    code2_r2 = plot_linear_regression(code2_df, ax, num,
+                                      'Number of exams',
+                                      'Overlap probability',
+                                      marker_c='g')
+
     ax.set_xlabel('Probability')
     ax.set_ylabel('Run time')
-    ax.set_title(f'{num} exams')
+    ax.set_title(f'''{num} exams
+    code1.c - $R^2$ = {code1_r2:.2f}%
+    code2.c - $R^2$ = {code1_r2:.2f}%''')
 
 # Add legend
 magenta_patch = mlines.Line2D([], [], c='m', marker='s',
