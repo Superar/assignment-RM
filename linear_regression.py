@@ -33,7 +33,8 @@ def linear_regression(x, y):
 def plot_linear_regression(df, ax, fixed_value,
                            fixed_attr, variable,
                            marker='o', marker_c='b',
-                           regr_line_c='r', regr_marker_c='r'):
+                           regr_line_c='r', regr_marker_c='r',
+                           regr_marker=',', dashes=[6, 2]):
     rows = (df[fixed_attr] == fixed_value) & \
         (df['runtime'] < 100) & \
         (df['runtime'] > 0)
@@ -46,7 +47,7 @@ def plot_linear_regression(df, ax, fixed_value,
     regr_x = x.sort_values().unique()
     regr_x = np.vstack([regr_x, np.ones(regr_x.shape)])
     regr_y = np.clip(np.power(10, np.dot(regr_params.T, regr_x)), 0, 100)
-    ax.scatter(regr_x[0, :], regr_y, marker=',', c=regr_marker_c)
+    ax.scatter(regr_x[0, :], regr_y, marker=regr_marker, c=regr_marker_c)
 
     regr_line_x = np.linspace(df[variable].min(), df[variable].max(), 1000)
     regr_line_x = np.vstack([regr_line_x, np.ones(regr_line_x.shape)])
@@ -192,11 +193,12 @@ for i, prob in enumerate(probs):
                                       'Overlap probability',
                                       'Number of exams',
                                       marker='d', marker_c='k',
-                                      regr_line_c='m', regr_marker_c='m')
+                                      regr_line_c='m', regr_marker_c='m',
+                                      regr_marker=10)
     code2_r2 = plot_linear_regression(code2_df, ax, prob,
                                       'Overlap probability',
                                       'Number of exams',
-                                      marker_c='g')
+                                      marker_c='g', regr_marker=11)
     ax.set_xlabel('Number of exams')
     ax.set_ylabel('Run time')
     ax.set_title(f'''Probability {prob*100:.2f}%
@@ -237,11 +239,12 @@ for i, num in enumerate(nums):
                                       'Number of exams',
                                       'Overlap probability',
                                       marker='d', marker_c='k',
-                                      regr_line_c='m', regr_marker_c='m')
+                                      regr_line_c='m', regr_marker_c='m',
+                                      regr_marker=10)
     code2_r2 = plot_linear_regression(code2_df, ax, num,
                                       'Number of exams',
                                       'Overlap probability',
-                                      marker_c='g')
+                                      marker_c='g', regr_marker=11)
 
     ax.set_xlabel('Probability')
     ax.set_ylabel('Run time')
