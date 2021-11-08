@@ -34,7 +34,7 @@ def plot_linear_regression(df, ax, fixed_value,
                            fixed_attr, variable,
                            marker='o', marker_c='b',
                            regr_line_c='r', regr_marker_c='r',
-                           regr_marker=',', dashes=[6, 2]):
+                           regr_marker=',', dashes=[2, 6]):
     rows = (df[fixed_attr] == fixed_value) & \
         (df['runtime'] < 100) & \
         (df['runtime'] > 0)
@@ -53,6 +53,10 @@ def plot_linear_regression(df, ax, fixed_value,
     regr_line_x = np.vstack([regr_line_x, np.ones(regr_line_x.shape)])
     regr_line_y = np.power(10, np.dot(regr_params.T, regr_line_x))
     ax.plot(regr_line_x[0, :], regr_line_y, c=regr_line_c)
+
+    # Plot mean dashed line
+    ax.plot(regr_x[0, :], np.repeat(y.mean(), regr_x.shape[1]),
+            dashes=dashes, c=marker_c, alpha=0.4)
 
     # Calculate residuals
     residuals = y - np.power(10, np.dot(regr_params.T,
@@ -190,13 +194,14 @@ for i, prob in enumerate(probs):
     code1_r2 = plot_linear_regression(code1_df, ax, prob,
                                       'Overlap probability',
                                       'Number of exams',
-                                      marker='d', marker_c='k',
+                                      marker=10, marker_c='k',
                                       regr_line_c='m', regr_marker_c='m',
-                                      regr_marker=10)
+                                      regr_marker=10, dashes=[2, 3])
     code2_r2 = plot_linear_regression(code2_df, ax, prob,
                                       'Overlap probability',
                                       'Number of exams',
-                                      marker_c='g', regr_marker=11)
+                                      marker=11, marker_c='g',
+                                      regr_marker=11, dashes=[2, 3])
     ax.set_xlabel('Number of exams')
     ax.set_ylabel('Run time')
     ax.set_title(f'''Probability {prob*100:.2f}%
@@ -204,17 +209,22 @@ for i, prob in enumerate(probs):
     code2.c - $R^2$ = {code2_r2:.2f}%''')
 
 # Add legend
-magenta_patch = mlines.Line2D([], [], c='m', marker='s',
+magenta_patch = mlines.Line2D([], [], c='m', marker=10,
                               label='Linear Regression - code1.c')
-red_patch = mlines.Line2D([], [], c='r', marker='s',
+red_patch = mlines.Line2D([], [], c='r', marker=11,
                           label='Linear Regression - code2.c')
-black_diamond = mlines.Line2D([], [], c='k', marker='d', linestyle='None',
+black_diamond = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
                               alpha=0.3, label='Observations - code1.c')
-green_circle = mlines.Line2D([], [], c='g', marker='o', linestyle='None',
+green_circle = mlines.Line2D([], [], c='g', marker=10, linestyle='None',
                              alpha=0.3, label='Observations - code2.c')
+dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
+                             alpha=0.4, label='Average run time - code1')
+dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
+                             alpha=0.4, label='Average run time - code2')
 fig.legend(handles=[magenta_patch, red_patch,
-                    black_diamond, green_circle],
-           loc='lower right', bbox_to_anchor=(0.87, 0.15))
+                    black_diamond, green_circle,
+                    dashed_black, dashed_green],
+           loc='lower right', bbox_to_anchor=(0.87, 0.1))
 
 fig.tight_layout()
 fig.savefig('img/linear_regression_grid_probability_fixed.png', format='png')
@@ -236,13 +246,14 @@ for i, num in enumerate(nums):
     code1_r2 = plot_linear_regression(code1_df, ax, num,
                                       'Number of exams',
                                       'Overlap probability',
-                                      marker='d', marker_c='k',
+                                      marker=10, marker_c='k',
                                       regr_line_c='m', regr_marker_c='m',
                                       regr_marker=10)
     code2_r2 = plot_linear_regression(code2_df, ax, num,
                                       'Number of exams',
                                       'Overlap probability',
-                                      marker_c='g', regr_marker=11)
+                                      marker=11, marker_c='g',
+                                      regr_marker=11)
 
     ax.set_xlabel('Probability')
     ax.set_ylabel('Run time')
@@ -255,12 +266,17 @@ magenta_patch = mlines.Line2D([], [], c='m', marker='s',
                               label='Linear Regression - code1.c')
 red_patch = mlines.Line2D([], [], c='r', marker='s',
                           label='Linear Regression - code2.c')
-black_diamond = mlines.Line2D([], [], c='k', marker='d', linestyle='None',
-                              alpha=0.3, label='Observations - code1.c')
-green_circle = mlines.Line2D([], [], c='g', marker='o', linestyle='None',
-                             alpha=0.3, label='Observations - code2.c')
+black_up = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
+                         alpha=0.3, label='Observations - code1.c')
+green_down = mlines.Line2D([], [], c='g', marker=11, linestyle='None',
+                           alpha=0.3, label='Observations - code2.c')
+dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
+                             alpha=0.4, label='Average run time - code1')
+dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
+                             alpha=0.4, label='Average run time - code2')
 fig.legend(handles=[magenta_patch, red_patch,
-                    black_diamond, green_circle],
+                    black_diamond, green_circle,
+                    dashed_black, dashed_green],
            loc='lower right', bbox_to_anchor=(0.8, 0.05))
 
 fig.tight_layout()
