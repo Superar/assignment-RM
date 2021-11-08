@@ -46,19 +46,17 @@ def plot_linear_regression(df, ax, fixed_value,
     regr_params = linear_regression(x, np.log10(y))
     regr_x = x.sort_values().unique()
     regr_x = np.vstack([regr_x, np.ones(regr_x.shape)])
-    regr_y = np.clip(np.power(10, np.dot(regr_params.T, regr_x)), 0, 100)
+    regr_y = np.power(10, np.dot(regr_params.T, regr_x))
     ax.scatter(regr_x[0, :], regr_y, marker=regr_marker, c=regr_marker_c)
 
     regr_line_x = np.linspace(df[variable].min(), df[variable].max(), 1000)
     regr_line_x = np.vstack([regr_line_x, np.ones(regr_line_x.shape)])
-    regr_line_y = np.clip(
-        np.power(10, np.dot(regr_params.T, regr_line_x)), 0, 100)
+    regr_line_y = np.power(10, np.dot(regr_params.T, regr_line_x))
     ax.plot(regr_line_x[0, :], regr_line_y, c=regr_line_c)
 
     # Calculate residuals
-    residuals = y - \
-        np.clip(np.power(10, np.dot(regr_params.T,
-                np.vstack([x, np.ones(x.shape)]))), 0, 100)
+    residuals = y - np.power(10, np.dot(regr_params.T,
+                             np.vstack([x, np.ones(x.shape)])))
     sst = np.square(y - y.mean()).sum()
     sse = np.square(residuals).sum()
     ssr = sst - sse
