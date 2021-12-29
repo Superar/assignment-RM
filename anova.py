@@ -65,4 +65,25 @@ for g in groups_df:
 print('Running TukeyHSD')
 mod1 = MultiComparison(np.array(data), groups)
 tukeyhsd_out = mod1.tukeyhsd(alpha=0.05)
-print(tukeyhsd_out)
+
+# Convert TukeyHSD result to pandas DataFrame
+tukeyhsd_html = tukeyhsd_out.summary().as_html()
+tukeyhsd_df = pd.read_html(tukeyhsd_html, header=0)[0]
+group1_cols = tukeyhsd_df['group1'].str.split(':', expand=True)
+tukeyhsd_df[['group1_algorithm', 'group1_exams', 'group1_prob']] = group1_cols
+group2_cols = tukeyhsd_df['group2'].str.split(':', expand=True)
+tukeyhsd_df[['group2_algorithm', 'group2_exams', 'group2_prob']] = group2_cols
+
+# Select relevant rows
+tukeyhsd_code1 = tukeyhsd_df['group1_algorithm'] == 'code1'
+tukeyhsd_code2 = tukeyhsd_df['group2_algorithm'] == 'code2'
+rejected = tukeyhsd_df['reject']
+same_n_exams = tukeyhsd_df['group1_exams'] == tukeyhsd_df['group2_exams']
+same_prob = tukeyhsd_df['group1_prob'] == tukeyhsd_df['group2_prob']
+same_parameters = same_n_exams & same_prob
+
+relevant_pairs = tukeyhsd_code1 & tukeyhsd_code2 & same_parameters
+
+filtered_pairs = tukeyhsd_df.loc[relevant_pairs, ['group1', 'group2', 'meandiff',
+                                                  'p-adj', 'lower', 'upper', 'reject']]
+filtered_pairs.to_csv('tukeyHSD_results.txt', index=False)
