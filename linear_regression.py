@@ -5,7 +5,7 @@ import numpy as np
 from numpy.core.fromnumeric import shape
 import pandas as pd
 
-FILE = 'EDA novo/results_11_06_2021_05_25_49.csv'
+FILE = 'EDA-granularity/results_11_06_2021_05_25_49.csv'
 
 
 def linear_regression_3d(x, y, z):
@@ -65,7 +65,7 @@ def plot_linear_regression(df, ax, fixed_value,
     sse = np.square(residuals).sum()
     ssr = sst - sse
     r2 = (ssr / sst)*100 if sst > 0 else 0.0
-    return r2
+    return r2, regr_params
 
 
 df = pd.read_csv(FILE, index_col=0)
@@ -191,22 +191,22 @@ for i in range(ncols - naxs_last_row):
 
 for i, prob in enumerate(probs):
     ax = axs[i // ncols][i % ncols]
-    code1_r2 = plot_linear_regression(code1_df, ax, prob,
-                                      'Overlap probability',
-                                      'Number of exams',
-                                      marker=10, marker_c='k',
-                                      regr_line_c='m', regr_marker_c='m',
-                                      regr_marker=10, dashes=[2, 3])
-    code2_r2 = plot_linear_regression(code2_df, ax, prob,
-                                      'Overlap probability',
-                                      'Number of exams',
-                                      marker=11, marker_c='g',
-                                      regr_marker=11, dashes=[2, 3])
+    code1_r2, code1_params = plot_linear_regression(code1_df, ax, prob,
+                                                    'Overlap probability',
+                                                    'Number of exams',
+                                                    marker=10, marker_c='k',
+                                                    regr_line_c='m', regr_marker_c='m',
+                                                    regr_marker=10, dashes=[2, 3])
+    code2_r2, code2_params = plot_linear_regression(code2_df, ax, prob,
+                                                    'Overlap probability',
+                                                    'Number of exams',
+                                                    marker=11, marker_c='g',
+                                                    regr_marker=11, dashes=[2, 3])
     ax.set_xlabel('Number of exams')
     ax.set_ylabel('Run time')
     ax.set_title(f'''Probability {prob*100:.2f}%
-    code1.c - $R^2$ = {code1_r2:.2f}%
-    code2.c - $R^2$ = {code2_r2:.2f}%''')
+    code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
+    code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''')
 
 # Add legend
 magenta_patch = mlines.Line2D([], [], c='m', marker=10,
@@ -243,23 +243,23 @@ for i in range(ncols - naxs_last_row):
 
 for i, num in enumerate(nums):
     ax = axs[i // ncols][i % ncols]
-    code1_r2 = plot_linear_regression(code1_df, ax, num,
-                                      'Number of exams',
-                                      'Overlap probability',
-                                      marker=10, marker_c='k',
-                                      regr_line_c='m', regr_marker_c='m',
-                                      regr_marker=10)
-    code2_r2 = plot_linear_regression(code2_df, ax, num,
-                                      'Number of exams',
-                                      'Overlap probability',
-                                      marker=11, marker_c='g',
-                                      regr_marker=11)
-
+    code1_r2, code1_params = plot_linear_regression(code1_df, ax, num,
+                                                    'Number of exams',
+                                                    'Overlap probability',
+                                                    marker=10, marker_c='k',
+                                                    regr_line_c='m', regr_marker_c='m',
+                                                    regr_marker=10)
+    code2_r2, code2_params = plot_linear_regression(code2_df, ax, num,
+                                                    'Number of exams',
+                                                    'Overlap probability',
+                                                    marker=11, marker_c='g',
+                                                    regr_marker=11)
     ax.set_xlabel('Probability')
     ax.set_ylabel('Run time')
     ax.set_title(f'''{num} exams
-    code1.c - $R^2$ = {code1_r2:.2f}%
-    code2.c - $R^2$ = {code1_r2:.2f}%''')
+    code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
+    code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''',
+    fontdict={'fontsize': 11})
 
 # Add legend
 magenta_patch = mlines.Line2D([], [], c='m', marker='s',
