@@ -1,0 +1,16 @@
+Reading data
+Data loaded
+Running ANOVA
+                                 sum_sq      df            F         PR(>F)
+C(algorithm)                   4.873704     1.0     2.350386   1.253401e-01
+n_exams                    10998.528168     1.0  5304.135197   0.000000e+00
+C(algorithm):n_exams           4.762986     1.0     2.296991   1.297129e-01
+prob                        2098.439595     1.0  1011.990617  7.037230e-196
+C(algorithm):prob             13.878149     1.0     6.692857   9.718941e-03
+n_exams:prob                 540.565378     1.0   260.692322   1.144784e-56
+C(algorithm):n_exams:prob     10.467231     1.0     5.047913   2.471612e-02
+Residual                    7448.285482  3592.0          NaN            NaN
+Plotting residuals-vs-fitted
+Plotting Normal Q-Q
+Preparing TukeyHSD data
+Running TukeyHSD

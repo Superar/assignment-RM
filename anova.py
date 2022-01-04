@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-FILE = 'EDA-granularity/results_11_06_2021_05_25_49.csv'
+FILE = 'results-milestone3/results_12_31_2021_14_08_35.csv'
 
 print('Reading data')
 df = pd.read_csv(FILE, index_col=0)
