@@ -1,15 +1,36 @@
 Reading data
 Data loaded
 Running ANOVA
-                                 sum_sq      df            F         PR(>F)
-C(algorithm)                   4.873704     1.0     2.350386   1.253401e-01
-n_exams                    10998.528168     1.0  5304.135197   0.000000e+00
-C(algorithm):n_exams           4.762986     1.0     2.296991   1.297129e-01
-prob                        2098.439595     1.0  1011.990617  7.037230e-196
-C(algorithm):prob             13.878149     1.0     6.692857   9.718941e-03
-n_exams:prob                 540.565378     1.0   260.692322   1.144784e-56
-C(algorithm):n_exams:prob     10.467231     1.0     5.047913   2.471612e-02
-Residual                    7448.285482  3592.0          NaN            NaN
+                                 sum_sq      df            F         PR(>F)  rejected
+C(algorithm)                   4.873704     1.0     2.350386   1.253401e-01     False
+n_exams                    10998.528168     1.0  5304.135197   0.000000e+00      True
+C(algorithm):n_exams           4.762986     1.0     2.296991   1.297129e-01     False
+prob                        2098.439595     1.0  1011.990617  7.037230e-196      True
+C(algorithm):prob             13.878149     1.0     6.692857   9.718941e-03      True
+n_exams:prob                 540.565378     1.0   260.692322   1.144784e-56      True
+C(algorithm):n_exams:prob     10.467231     1.0     5.047913   2.471612e-02      True
+Residual                    7448.285482  3592.0          NaN            NaN     False
+
+
+\begin{table}
+\centering
+\caption{ANOVA results}
+\begin{tabular}{lrrrr}
+\toprule
+{} & Sum of Squares & Degrees of Freedom &          F &      PR(>F) \\
+\midrule
+C(algorithm)              &     4.8737e+00 &         1.0000e+00 & 2.3504e+00 &  1.2534e-01 \\
+n\_exams                   &     1.0999e+04 &         1.0000e+00 & 5.3041e+03 &  0.0000e+00 \\
+C(algorithm):n\_exams      &     4.7630e+00 &         1.0000e+00 & 2.2970e+00 &  1.2971e-01 \\
+prob                      &     2.0984e+03 &         1.0000e+00 & 1.0120e+03 & 7.0372e-196 \\
+C(algorithm):prob         &     1.3878e+01 &         1.0000e+00 & 6.6929e+00 &  9.7189e-03 \\
+n\_exams:prob              &     5.4057e+02 &         1.0000e+00 & 2.6069e+02 &  1.1448e-56 \\
+C(algorithm):n\_exams:prob &     1.0467e+01 &         1.0000e+00 & 5.0479e+00 &  2.4716e-02 \\
+Residual                  &     7.4483e+03 &         3.5920e+03 &        NaN &         NaN \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 Plotting residuals-vs-fitted
 Plotting Normal Q-Q
 Preparing TukeyHSD data

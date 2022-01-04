@@ -27,7 +27,14 @@ print('Data loaded')
 print('Running ANOVA')
 model = ols('log_runtime ~ C(algorithm)*n_exams*prob', data=df).fit()
 anova_results = anova_lm(model, typ=2)
-print(anova_results)
+anova_results['rejected'] = anova_results['PR(>F)'] < 0.05
+print(anova_results.to_string())
+print('\n')
+print(anova_results.to_latex(
+    columns=['sum_sq', 'df', 'F', 'PR(>F)'],
+    header=['Sum of Squares', 'Degrees of Freedom', 'F', 'PR(>F)'],
+    float_format='{:.4e}'.format,
+    caption='ANOVA results'))
 
 # Residuals-vs-fitted plot
 print('Plotting residuals-vs-fitted')
