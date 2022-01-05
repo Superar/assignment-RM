@@ -30,18 +30,23 @@ def linear_regression(x, y):
     return params
 
 
-def plot_linear_regression(df, ax, fixed_value,
-                           fixed_attr, variable,
-                           marker='o', marker_c='b',
+def plot_linear_regression(df, ax, variable,
+                           fixed_value=None, fixed_attr=None,
+                           remove_cutoff=True,
+                           marker='o', marker_c='b', marker_edge='None',
                            regr_line_c='r', regr_marker_c='r',
                            regr_marker=',', dashes=[2, 6]):
-    rows = (df[fixed_attr] == fixed_value) & \
-        (df['runtime'] < 100) & \
-        (df['runtime'] > 0)
+    rows = df['runtime'] > 0
+
+    if fixed_attr and fixed_value:
+        rows = rows & df[fixed_attr] == fixed_value
+    if remove_cutoff:
+        rows = rows & df['runtime'] < 100
     prob_df = df.loc[rows, :]
     x, y = prob_df[variable], prob_df['runtime']
     ax.set_yscale('log')
-    ax.scatter(x, y, marker=marker, c=marker_c, alpha=0.3)
+    ax.scatter(x, y, marker=marker, c=marker_c, alpha=0.3,
+               edgecolors=marker_edge)
 
     regr_params = linear_regression(x, np.log10(y))
     regr_x = x.sort_values().unique()
@@ -68,217 +73,224 @@ def plot_linear_regression(df, ax, fixed_value,
     return r2, regr_params
 
 
-df = pd.read_csv(FILE, index_col=0)
-clean_info = df['file'].str.lstrip('data_').str.rstrip('.in')
-split_info = clean_info.str.split('-')
+def main():
+    df = pd.read_csv(FILE, index_col=0)
+    clean_info = df['file'].str.lstrip('data_').str.rstrip('.in')
+    split_info = clean_info.str.split('-')
 
-df[['Number of exams', 'Overlap probability', 'Seed']] = split_info.to_list()
-df['Number of exams'] = df['Number of exams'].astype('int')
-df['Overlap probability'] = df['Overlap probability'].astype('float')
-df['Seed'] = df['Seed'].astype('int')
+    df[['Number of exams', 'Overlap probability', 'Seed']] = split_info.to_list()
+    df['Number of exams'] = df['Number of exams'].astype('int')
+    df['Overlap probability'] = df['Overlap probability'].astype('float')
+    df['Seed'] = df['Seed'].astype('int')
 
-### LINEAR REGRESSION ###
-df_no_timeout = df.loc[df['runtime'] != 100, :]
-df_no_timeout = df_no_timeout.loc[df_no_timeout['runtime'] > 0, :]
-df_no_timeout['log runtime'] = df_no_timeout['runtime'].apply(np.log10)
+    ### LINEAR REGRESSION ###
+    df_no_timeout = df.loc[df['runtime'] != 100, :]
+    df_no_timeout = df_no_timeout.loc[df_no_timeout['runtime'] > 0, :]
+    df_no_timeout['log runtime'] = df_no_timeout['runtime'].apply(np.log10)
 
-code1_runs = df_no_timeout.loc[df_no_timeout['algorithm'] == 'code1', :]
-code2_runs = df_no_timeout.loc[df_no_timeout['algorithm'] == 'code2', :]
+    code1_runs = df_no_timeout.loc[df_no_timeout['algorithm'] == 'code1', :]
+    code2_runs = df_no_timeout.loc[df_no_timeout['algorithm'] == 'code2', :]
 
-# code1
-code1_params = linear_regression_3d(code1_runs['Overlap probability'],
-                                    code1_runs['Number of exams'],
-                                    code1_runs['log runtime'])
-code1_surf_x, code1_surf_y = np.meshgrid(code1_runs['Overlap probability'],
-                                         code1_runs['Number of exams'])
-code1_surf_x, code1_surf_y = code1_surf_x.flatten(), code1_surf_y.flatten()
-code1_surf_bias = np.ones(shape=code1_surf_x.shape)
-code1_surf_z = np.dot(code1_params.T,
-                      np.vstack([code1_surf_x, code1_surf_y, code1_surf_bias]))
+    # code1
+    code1_params = linear_regression_3d(code1_runs['Overlap probability'],
+                                        code1_runs['Number of exams'],
+                                        code1_runs['log runtime'])
+    code1_surf_x, code1_surf_y = np.meshgrid(code1_runs['Overlap probability'],
+                                             code1_runs['Number of exams'])
+    code1_surf_x, code1_surf_y = code1_surf_x.flatten(), code1_surf_y.flatten()
+    code1_surf_bias = np.ones(shape=code1_surf_x.shape)
+    code1_surf_z = np.dot(code1_params.T,
+                          np.vstack([code1_surf_x, code1_surf_y, code1_surf_bias]))
 
-# code2
-code2_params = linear_regression_3d(code2_runs['Overlap probability'],
-                                    code2_runs['Number of exams'],
-                                    code2_runs['log runtime'])
-code2_surf_x, code2_surf_y = np.meshgrid(code2_runs['Overlap probability'],
-                                         code2_runs['Number of exams'])
-code2_surf_x, code2_surf_y = code2_surf_x.flatten(), code2_surf_y.flatten()
-code2_surf_bias = np.ones(shape=code2_surf_x.shape)
-code2_surf_z = np.dot(code2_params.T,
-                      np.vstack([code2_surf_x, code2_surf_y, code2_surf_bias]))
+    # code2
+    code2_params = linear_regression_3d(code2_runs['Overlap probability'],
+                                        code2_runs['Number of exams'],
+                                        code2_runs['log runtime'])
+    code2_surf_x, code2_surf_y = np.meshgrid(code2_runs['Overlap probability'],
+                                             code2_runs['Number of exams'])
+    code2_surf_x, code2_surf_y = code2_surf_x.flatten(), code2_surf_y.flatten()
+    code2_surf_bias = np.ones(shape=code2_surf_x.shape)
+    code2_surf_z = np.dot(code2_params.T,
+                          np.vstack([code2_surf_x, code2_surf_y, code2_surf_bias]))
 
-### PLOT IN LOG SPACE ###
-fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'},
-                               figsize=(15, 5))
-plt.tight_layout(w_pad=7)
+    ### PLOT IN LOG SPACE ###
+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'},
+                                   figsize=(15, 5))
+    plt.tight_layout(w_pad=7)
 
-# code1
-ax1.view_init(13, -36)
-ax1.scatter(code1_runs['Overlap probability'],
-            code1_runs['Number of exams'],
-            code1_runs['log runtime'])
-ax1.plot_trisurf(code1_surf_x, code1_surf_y, np.clip(code1_surf_z, code1_surf_z.min(), 2),
-                 alpha=0.3, shade=False, color='r')
-ax1.zaxis.set_major_formatter(mtick.FuncFormatter(lambda z, _: f'$10^{{{z:.0f}}}$'))
-ax1.set_title('code1', y=1, pad=0)
-ax1.set_xlabel('Overlap probability')
-ax1.set_ylabel('Number of exams')
-ax1.set_zlabel('Run time')
+    # code1
+    ax1.view_init(13, -36)
+    ax1.scatter(code1_runs['Overlap probability'],
+                code1_runs['Number of exams'],
+                code1_runs['log runtime'])
+    ax1.plot_trisurf(code1_surf_x, code1_surf_y, np.clip(code1_surf_z, code1_surf_z.min(), 2),
+                     alpha=0.3, shade=False, color='r')
+    ax1.zaxis.set_major_formatter(
+        mtick.FuncFormatter(lambda z, _: f'$10^{{{z:.0f}}}$'))
+    ax1.set_title('code1', y=1, pad=0)
+    ax1.set_xlabel('Overlap probability')
+    ax1.set_ylabel('Number of exams')
+    ax1.set_zlabel('Run time')
 
-# code2
-ax2.view_init(13, -36)
-ax2.scatter(code2_runs['Overlap probability'],
-            code2_runs['Number of exams'],
-            code2_runs['log runtime'])
-ax2.plot_trisurf(code2_surf_x, code2_surf_y, np.clip(code2_surf_z, code2_surf_z.min(), 2),
-                 alpha=0.3, shade=False, color='r')
-ax2.zaxis.set_major_formatter(mtick.FuncFormatter(lambda z, _: f'$10^{{{z:.0f}}}$'))
-ax2.set_title('code2', y=1, pad=0)
-ax2.set_xlabel('Overlap probability')
-ax2.set_ylabel('Number of exams')
-ax2.set_zlabel('Runtime')
+    # code2
+    ax2.view_init(13, -36)
+    ax2.scatter(code2_runs['Overlap probability'],
+                code2_runs['Number of exams'],
+                code2_runs['log runtime'])
+    ax2.plot_trisurf(code2_surf_x, code2_surf_y, np.clip(code2_surf_z, code2_surf_z.min(), 2),
+                     alpha=0.3, shade=False, color='r')
+    ax2.zaxis.set_major_formatter(
+        mtick.FuncFormatter(lambda z, _: f'$10^{{{z:.0f}}}$'))
+    ax2.set_title('code2', y=1, pad=0)
+    ax2.set_xlabel('Overlap probability')
+    ax2.set_ylabel('Number of exams')
+    ax2.set_zlabel('Runtime')
 
-plt.savefig('img/linear_regression_log.pdf', format='pdf')
+    plt.savefig('img/linear_regression_log.pdf', format='pdf')
 
-### PLOT IN EXP SPACE ###
+    ### PLOT IN EXP SPACE ###
 
-fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'},
-                               figsize=(15, 5))
-plt.tight_layout(w_pad=2)
+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'},
+                                   figsize=(15, 5))
+    plt.tight_layout(w_pad=2)
 
-# code1
-ax1.view_init(13, -36)
-ax1.scatter(code1_runs['Overlap probability'],
-            code1_runs['Number of exams'],
-            code1_runs['runtime'])
-code1_surf_z_exp = np.clip(np.power(10, code1_surf_z), 0, 100)
-ax1.plot_trisurf(code1_surf_x, code1_surf_y, code1_surf_z_exp,
-                 alpha=0.3, shade=False, color='r')
-ax1.set_title('code1', y=1, pad=0)
-ax1.set_xlabel('Overlap probability')
-ax1.set_ylabel('Number of exams')
-ax1.set_zlabel('Runtime')
+    # code1
+    ax1.view_init(13, -36)
+    ax1.scatter(code1_runs['Overlap probability'],
+                code1_runs['Number of exams'],
+                code1_runs['runtime'])
+    code1_surf_z_exp = np.clip(np.power(10, code1_surf_z), 0, 100)
+    ax1.plot_trisurf(code1_surf_x, code1_surf_y, code1_surf_z_exp,
+                     alpha=0.3, shade=False, color='r')
+    ax1.set_title('code1', y=1, pad=0)
+    ax1.set_xlabel('Overlap probability')
+    ax1.set_ylabel('Number of exams')
+    ax1.set_zlabel('Runtime')
 
-# code2
-ax2.view_init(13, -36)
-ax2.scatter(code2_runs['Overlap probability'],
-            code2_runs['Number of exams'],
-            code2_runs['runtime'])
-code2_surf_z_exp = np.clip(np.power(10, code2_surf_z), 0, 100)
-ax2.plot_trisurf(code2_surf_x, code2_surf_y, code2_surf_z_exp,
-                 alpha=0.3, shade=False, color='r')
+    # code2
+    ax2.view_init(13, -36)
+    ax2.scatter(code2_runs['Overlap probability'],
+                code2_runs['Number of exams'],
+                code2_runs['runtime'])
+    code2_surf_z_exp = np.clip(np.power(10, code2_surf_z), 0, 100)
+    ax2.plot_trisurf(code2_surf_x, code2_surf_y, code2_surf_z_exp,
+                     alpha=0.3, shade=False, color='r')
 
-ax2.set_title('code2', y=1, pad=0)
-ax2.set_xlabel('Overlap probability')
-ax2.set_ylabel('Number of exams')
-ax2.set_zlabel('Runtime')
+    ax2.set_title('code2', y=1, pad=0)
+    ax2.set_xlabel('Overlap probability')
+    ax2.set_ylabel('Number of exams')
+    ax2.set_zlabel('Runtime')
 
-plt.savefig('img/linear_regression.pdf', format='pdf')
+    plt.savefig('img/linear_regression.pdf', format='pdf')
 
-### GRID LINEAR REGRESSION - FIXED PROBABILITY ###
-code1_df = df.loc[df['algorithm'] == 'code1']
-code2_df = df.loc[df['algorithm'] == 'code2']
+    ### GRID LINEAR REGRESSION - FIXED PROBABILITY ###
+    code1_df = df.loc[df['algorithm'] == 'code1']
+    code2_df = df.loc[df['algorithm'] == 'code2']
 
-ncols = 3
-probs = sorted(df['Overlap probability'].unique())
-naxs_last_row = len(probs) % ncols
-nrows = len(probs) // ncols
-nrows = nrows + 1 if naxs_last_row else nrows
+    ncols = 3
+    probs = sorted(df['Overlap probability'].unique())
+    naxs_last_row = len(probs) % ncols
+    nrows = len(probs) // ncols
+    nrows = nrows + 1 if naxs_last_row else nrows
 
-fig, axs = plt.subplots(nrows, ncols, figsize=(15, 10))
-for i in range(ncols - naxs_last_row):
-    axs[-1][-i-1].remove()
+    fig, axs = plt.subplots(nrows, ncols, figsize=(15, 10))
+    for i in range(ncols - naxs_last_row):
+        axs[-1][-i-1].remove()
 
-for i, prob in enumerate(probs):
-    ax = axs[i // ncols][i % ncols]
-    code1_r2, code1_params = plot_linear_regression(code1_df, ax, prob,
-                                                    'Overlap probability',
-                                                    'Number of exams',
-                                                    marker=10, marker_c='k',
-                                                    regr_line_c='m', regr_marker_c='m',
-                                                    regr_marker=10, dashes=[2, 3])
-    code2_r2, code2_params = plot_linear_regression(code2_df, ax, prob,
-                                                    'Overlap probability',
-                                                    'Number of exams',
-                                                    marker=11, marker_c='g',
-                                                    regr_marker=11, dashes=[2, 3])
-    ax.set_xlabel('Number of exams')
-    ax.set_ylabel('Run time')
-    ax.set_title(f'''Probability {prob*100:.2f}%
-    code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
-    code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''')
+    for i, prob in enumerate(probs):
+        ax = axs[i // ncols][i % ncols]
+        code1_r2, code1_params = plot_linear_regression(code1_df, ax, 'Number of exams',
+                                                        fixed_value=prob,
+                                                        fixed_attr='Overlap probability',
+                                                        marker=10, marker_c='k',
+                                                        regr_line_c='m', regr_marker_c='m',
+                                                        regr_marker=10, dashes=[2, 3])
+        code2_r2, code2_params = plot_linear_regression(code2_df, ax, 'Number of exams',
+                                                        fixed_value=prob,
+                                                        fixed_attr='Overlap probability',
+                                                        marker=11, marker_c='g',
+                                                        regr_marker=11, dashes=[2, 3])
+        ax.set_xlabel('Number of exams')
+        ax.set_ylabel('Run time')
+        ax.set_title(f'''Probability {prob*100:.2f}%
+        code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
+        code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''')
 
-# Add legend
-magenta_patch = mlines.Line2D([], [], c='m', marker=10,
-                              label='Linear Regression - code1.c')
-red_patch = mlines.Line2D([], [], c='r', marker=11,
-                          label='Linear Regression - code2.c')
-black_diamond = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
-                              alpha=0.3, label='Observations - code1.c')
-green_circle = mlines.Line2D([], [], c='g', marker=10, linestyle='None',
-                             alpha=0.3, label='Observations - code2.c')
-dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
-                             alpha=0.4, label='Average run time - code1')
-dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
-                             alpha=0.4, label='Average run time - code2')
-fig.legend(handles=[magenta_patch, red_patch,
-                    black_diamond, green_circle,
-                    dashed_black, dashed_green],
-           loc='lower right', bbox_to_anchor=(0.87, 0.1))
+    # Add legend
+    magenta_patch = mlines.Line2D([], [], c='m', marker=10,
+                                  label='Linear Regression - code1.c')
+    red_patch = mlines.Line2D([], [], c='r', marker=11,
+                              label='Linear Regression - code2.c')
+    black_diamond = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
+                                  alpha=0.3, label='Observations - code1.c')
+    green_circle = mlines.Line2D([], [], c='g', marker=10, linestyle='None',
+                                 alpha=0.3, label='Observations - code2.c')
+    dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
+                                 alpha=0.4, label='Average run time - code1')
+    dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
+                                 alpha=0.4, label='Average run time - code2')
+    fig.legend(handles=[magenta_patch, red_patch,
+                        black_diamond, green_circle,
+                        dashed_black, dashed_green],
+               loc='lower right', bbox_to_anchor=(0.87, 0.1))
 
-fig.tight_layout()
-fig.savefig('img/linear_regression_grid_probability_fixed.png', format='png')
-fig.savefig('img/linear_regression_grid_probability_fixed.pdf', format='pdf')
+    fig.tight_layout()
+    fig.savefig('img/linear_regression_grid_probability_fixed.png', format='png')
+    fig.savefig('img/linear_regression_grid_probability_fixed.pdf', format='pdf')
 
-### GRID LINEAR REGRESSION - FIXED NUMBER OF EXAMS ###
-ncols = 6
-nums = sorted(df['Number of exams'].unique())
-naxs_last_row = len(nums) % ncols
-nrows = len(nums) // ncols
-nrows = nrows + 1 if naxs_last_row else nrows
+    ### GRID LINEAR REGRESSION - FIXED NUMBER OF EXAMS ###
+    ncols = 6
+    nums = sorted(df['Number of exams'].unique())
+    naxs_last_row = len(nums) % ncols
+    nrows = len(nums) // ncols
+    nrows = nrows + 1 if naxs_last_row else nrows
 
-fig, axs = plt.subplots(nrows, ncols, figsize=(20, 10))
-for i in range(ncols - naxs_last_row):
-    axs[-1][-i-1].remove()
+    fig, axs = plt.subplots(nrows, ncols, figsize=(20, 10))
+    for i in range(ncols - naxs_last_row):
+        axs[-1][-i-1].remove()
 
-for i, num in enumerate(nums):
-    ax = axs[i // ncols][i % ncols]
-    code1_r2, code1_params = plot_linear_regression(code1_df, ax, num,
-                                                    'Number of exams',
-                                                    'Overlap probability',
-                                                    marker=10, marker_c='k',
-                                                    regr_line_c='m', regr_marker_c='m',
-                                                    regr_marker=10)
-    code2_r2, code2_params = plot_linear_regression(code2_df, ax, num,
-                                                    'Number of exams',
-                                                    'Overlap probability',
-                                                    marker=11, marker_c='g',
-                                                    regr_marker=11)
-    ax.set_xlabel('Probability')
-    ax.set_ylabel('Run time')
-    ax.set_title(f'''{num} exams
-    code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
-    code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''',
-    fontdict={'fontsize': 11})
+    for i, num in enumerate(nums):
+        ax = axs[i // ncols][i % ncols]
+        code1_r2, code1_params = plot_linear_regression(code1_df, ax, 'Overlap probability',
+                                                        fixed_value=num,
+                                                        fixed_attr='Number of exams',
+                                                        marker=10, marker_c='k',
+                                                        regr_line_c='m', regr_marker_c='m',
+                                                        regr_marker=10)
+        code2_r2, code2_params = plot_linear_regression(code2_df, ax, 'Overlap probability',
+                                                        fixed_value=num,
+                                                        fixed_attr='Number of exams',
+                                                        marker=11, marker_c='g',
+                                                        regr_marker=11)
+        ax.set_xlabel('Probability')
+        ax.set_ylabel('Run time')
+        ax.set_title(f'''{num} exams
+        code1.c $\\to {code1_params[0]:.2f}x {code1_params[1]:+.2f}; R^2 = {code1_r2:.2f}%$
+        code2.c $\\to {code2_params[0]:.2f}x {code2_params[1]:+.2f}; R^2 = {code2_r2:.2f}%$''',
+                     fontdict={'fontsize': 11})
 
-# Add legend
-magenta_patch = mlines.Line2D([], [], c='m', marker='s',
-                              label='Linear Regression - code1.c')
-red_patch = mlines.Line2D([], [], c='r', marker='s',
-                          label='Linear Regression - code2.c')
-black_up = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
-                         alpha=0.3, label='Observations - code1.c')
-green_down = mlines.Line2D([], [], c='g', marker=11, linestyle='None',
-                           alpha=0.3, label='Observations - code2.c')
-dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
-                             alpha=0.4, label='Average run time - code1')
-dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
-                             alpha=0.4, label='Average run time - code2')
-fig.legend(handles=[magenta_patch, red_patch,
-                    black_diamond, green_circle,
-                    dashed_black, dashed_green],
-           loc='lower right', bbox_to_anchor=(0.8, 0.05))
+    # Add legend
+    magenta_patch = mlines.Line2D([], [], c='m', marker='s',
+                                  label='Linear Regression - code1.c')
+    red_patch = mlines.Line2D([], [], c='r', marker='s',
+                              label='Linear Regression - code2.c')
+    black_up = mlines.Line2D([], [], c='k', marker=10, linestyle='None',
+                             alpha=0.3, label='Observations - code1.c')
+    green_down = mlines.Line2D([], [], c='g', marker=11, linestyle='None',
+                               alpha=0.3, label='Observations - code2.c')
+    dashed_black = mlines.Line2D([], [], c='k', dashes=[2, 3],
+                                 alpha=0.4, label='Average run time - code1')
+    dashed_green = mlines.Line2D([], [], c='g', dashes=[2, 3],
+                                 alpha=0.4, label='Average run time - code2')
+    fig.legend(handles=[magenta_patch, red_patch,
+                        black_diamond, green_circle,
+                        dashed_black, dashed_green],
+               loc='lower right', bbox_to_anchor=(0.8, 0.05))
 
-fig.tight_layout()
-fig.savefig('img/linear_regression_grid_num_exams_fixed.png', format='png')
-fig.savefig('img/linear_regression_grid_num_exams_fixed.pdf', format='pdf')
+    fig.tight_layout()
+    fig.savefig('img/linear_regression_grid_num_exams_fixed.png', format='png')
+    fig.savefig('img/linear_regression_grid_num_exams_fixed.pdf', format='pdf')
+
+
+if __name__ == '__main__':
+    main()
