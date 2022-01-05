@@ -80,6 +80,8 @@ group1_cols = tukeyhsd_df['group1'].str.split(':', expand=True)
 tukeyhsd_df[['group1_algorithm', 'group1_exams', 'group1_prob']] = group1_cols
 group2_cols = tukeyhsd_df['group2'].str.split(':', expand=True)
 tukeyhsd_df[['group2_algorithm', 'group2_exams', 'group2_prob']] = group2_cols
+tukeyhsd_df.to_csv('results-milestone3/tukeyHSD_results_complete.csv',
+                   index=False)
 
 # Select relevant rows
 tukeyhsd_code1 = tukeyhsd_df['group1_algorithm'] == 'code1'
@@ -90,7 +92,7 @@ same_prob = tukeyhsd_df['group1_prob'] == tukeyhsd_df['group2_prob']
 same_parameters = same_n_exams & same_prob
 
 relevant_pairs = tukeyhsd_code1 & tukeyhsd_code2 & same_parameters
-
 filtered_pairs = tukeyhsd_df.loc[relevant_pairs, ['group1', 'group2', 'meandiff',
                                                   'p-adj', 'lower', 'upper', 'reject']]
-filtered_pairs.to_csv('tukeyHSD_results.txt', index=False)
+filtered_pairs.to_csv('results-milestone3/tukeyHSD_results_filtered.csv',
+                      index=False)
