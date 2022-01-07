@@ -1,0 +1,38 @@
+IGNORING TIMEOUT ENTRIES
+Reading data
+Data loaded
+Running ANOVA
+                                sum_sq      df            F         PR(>F)  rejected
+C(algorithm)                 12.540486     1.0    15.792348   7.462101e-05      True
+n_exams                    4057.978114     1.0  5110.248632   0.000000e+00      True
+C(algorithm):n_exams         10.578986     1.0    13.322213   2.728099e-04      True
+prob                       1595.600095     1.0  2009.353666  6.753974e-265      True
+C(algorithm):prob            24.185445     1.0    30.456950   4.125290e-08      True
+n_exams:prob               1388.290048     1.0  1748.286245  7.399181e-242      True
+C(algorithm):n_exams:prob     0.004420     1.0     0.005566   9.405383e-01     False
+Residual                   1019.606730  1284.0          NaN            NaN     False
+
+
+\begin{table}
+\centering
+\caption{ANOVA results}
+\begin{tabular}{lrrrr}
+\toprule
+{} & Sum of Squares & Degrees of Freedom &          F &      PR(>F) \\
+\midrule
+C(algorithm)              &     1.2540e+01 &         1.0000e+00 & 1.5792e+01 &  7.4621e-05 \\
+n\_exams                   &     4.0580e+03 &         1.0000e+00 & 5.1102e+03 &  0.0000e+00 \\
+C(algorithm):n\_exams      &     1.0579e+01 &         1.0000e+00 & 1.3322e+01 &  2.7281e-04 \\
+prob                      &     1.5956e+03 &         1.0000e+00 & 2.0094e+03 & 6.7540e-265 \\
+C(algorithm):prob         &     2.4185e+01 &         1.0000e+00 & 3.0457e+01 &  4.1253e-08 \\
+n\_exams:prob              &     1.3883e+03 &         1.0000e+00 & 1.7483e+03 & 7.3992e-242 \\
+C(algorithm):n\_exams:prob &     4.4202e-03 &         1.0000e+00 & 5.5663e-03 &  9.4054e-01 \\
+Residual                  &     1.0196e+03 &         1.2840e+03 &        NaN &         NaN \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Plotting residuals-vs-fitted
+Plotting Normal Q-Q
+Preparing TukeyHSD data
+Running TukeyHSD
