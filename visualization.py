@@ -26,6 +26,8 @@ df['Seed'] = df['Seed'].astype('int')
 #### Plots ####
 
 # Timeout histogram
+fig = plt.figure(figsize=(10, 5))
+plt.rcParams.update({'font.size': 22})
 num_slots_data = df.groupby(by=['algorithm'])['slots'].value_counts()
 num_slots_counts = num_slots_data.index.get_level_values('slots')
 
@@ -38,11 +40,14 @@ non_timeout_counts.name = 'Non-timeout'
 
 timeout_df = pd.concat([timeout_counts, non_timeout_counts], axis=1)
 timeout_df.index = ['Code 1', 'Code 2']
-ax = timeout_df.plot.bar()
+ax = fig.gca()
+ax.set_ylim(top=1500)
+timeout_df.plot.bar(ax=ax)
 for p in ax.patches:
     ax.annotate(str(p.get_height()),
                 (p.get_x() + (p.get_width() * 0.5), p.get_height() * 1.005),
                 ha='center')
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 plt.tight_layout()
 plt.savefig('img/timeout_hist.pdf', format='pdf')
 
